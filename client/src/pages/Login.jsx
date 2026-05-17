@@ -1,168 +1,126 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { Briefcase, Mail, Lock, AlertCircle } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    role: 'user',
-  });
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('jobseeker');
   const [error, setError] = useState('');
-
-  const from = location.state?.from || '/';
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
-  };
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    const result = await login(formData.email, formData.password, formData.role);
-    
-    if (result.success) {
-      if (formData.role === 'company') {
-        navigate('/company/dashboard');
-      } else {
-        navigate(from);
+    try {
+      const { data } = await axios.post('/api/users/login', { email, password });
+      
+      if (data.role !== role) {
+        setError(`Please log in using the correct account type. This email belongs to an ${data.role} account.`);
+        setLoading(false);
+        return;
       }
-    } else {
-      setError(result.error);
+
+      login(data);
+      
+      if (data.role === 'admin') {
+        navigate('/admin');
+      } else if (data.role === 'organisation') {
+        navigate('/dashboard');
+      } else {
+        navigate('/jobs'); // Redirect student to Find Jobs
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700 mb-6">
-            <Briefcase className="h-10 w-10" />
-            <span className="text-3xl font-bold">JobPortal</span>
-          </Link>
-          <h2 className="text-3xl font-bold text-gray-900" data-testid="login-title">Welcome Back</h2>
-          <p className="mt-2 text-gray-600">Sign in to your account to continue</p>
+    <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-10 border border-gray-100">
+      <div className="bg-blue-900 py-8 text-center">
+        <LogIn className="w-12 h-12 text-white mx-auto mb-2" />
+        <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
+        <p className="text-blue-200">Sign in to your account</p>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-3 border border-red-100">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Mail className="w-4 h-4" /> Email Address
+          </label>
+          <input 
+            type="email" 
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6" data-testid="login-form">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex items-start space-x-3">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                <p className="text-red-700 text-sm" data-testid="login-error">{error}</p>
-              </div>
-            )}
-
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                I am a:
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'user' })}
-                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    formData.role === 'user'
-                      ? 'bg-primary-600 text-white border-2 border-primary-600'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-primary-300'
-                  }`}
-                  data-testid="role-jobseeker-button"
-                >
-                  Job Seeker
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: 'company' })}
-                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    formData.role === 'company'
-                      ? 'bg-primary-600 text-white border-2 border-primary-600'
-                      : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-primary-300'
-                  }`}
-                  data-testid="role-company-button"
-                >
-                  Company
-                </button>
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input-field pl-11"
-                  placeholder="you@example.com"
-                  data-testid="login-email-input"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field pl-11"
-                  placeholder="Enter your password"
-                  data-testid="login-password-input"
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="login-submit-button"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Sign Up Link */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-semibold" data-testid="signup-link">
-                Sign up
-              </Link>
-            </p>
+        <div className="space-y-3 pb-2">
+          <label className="text-sm font-semibold text-gray-700">Account Type</label>
+          <div className="grid grid-cols-3 gap-3">
+            <label className={`cursor-pointer border rounded-lg py-2 px-3 text-center text-sm font-medium transition ${role === 'jobseeker' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+              <input type="radio" name="role" className="hidden" checked={role === 'jobseeker'} onChange={() => setRole('jobseeker')} />
+              Student
+            </label>
+            <label className={`cursor-pointer border rounded-lg py-2 px-3 text-center text-sm font-medium transition ${role === 'organisation' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+              <input type="radio" name="role" className="hidden" checked={role === 'organisation'} onChange={() => setRole('organisation')} />
+              Organization
+            </label>
+            <label className={`cursor-pointer border rounded-lg py-2 px-3 text-center text-sm font-medium transition ${role === 'admin' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+              <input type="radio" name="role" className="hidden" checked={role === 'admin'} onChange={() => setRole('admin')} />
+              Admin
+            </label>
           </div>
         </div>
-      </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Lock className="w-4 h-4" /> Password
+          </label>
+          <input 
+            type="password" 
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition transform active:scale-95 disabled:bg-gray-400"
+        >
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+
+        <div className="text-center text-sm text-gray-600">
+          Don't have an account? {' '}
+          <Link to="/register" className="text-blue-900 font-bold hover:underline">
+            Register now
+          </Link>
+        </div>
+      </form>
     </div>
   );
 };

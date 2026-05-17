@@ -1,45 +1,90 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, "Name is required"],
+      required: true,
+      unique: true,
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: true,
       unique: true,
-      match: [/.+\@.+\..+/, "Please fill a valid email address"],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: true,
     },
     role: {
       type: String,
-      enum: ["user", "company", "admin"],
-      default: "user",
+      required: true,
+      enum: ['jobseeker', 'organisation', 'admin'],
+      default: 'jobseeker',
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    contact: {
+      type: String,
+    },
+    profile: {
+      // Common profile fields
+      fullName: String,
+      bio: String,
+      avatar: String,
+      // Jobseeker specific
+      resume: String,
+      resumeData: Object,
+      skills: [String],
+      education: [
+        {
+          school: String,
+          degree: String,
+          fieldOfStudy: String,
+          from: Date,
+          to: Date,
+          current: Boolean,
+          description: String,
+        },
+      ],
+      experience: [
+        {
+          title: String,
+          company: String,
+          location: String,
+          from: Date,
+          to: Date,
+          current: Boolean,
+          description: String,
+        },
+      ],
+      // Organisation specific
+      companyName: String,
+      website: String,
+      location: String,
+      description: String,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) {
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

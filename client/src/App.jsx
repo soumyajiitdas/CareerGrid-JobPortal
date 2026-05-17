@@ -1,98 +1,59 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Jobs from './pages/Jobs';
-import JobDetails from './pages/JobDetails';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
+import Register from './pages/Register';
 import CompanyDashboard from './pages/CompanyDashboard';
-import PostJob from './pages/PostJob';
-import Loading from './components/Loading';
+import AdminDashboard from './pages/AdminDashboard';
+import Profile from './pages/Profile';
+import ResumeBuilder from './pages/ResumeBuilder';
+import FindJobs from './pages/FindJobs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import FAQ from './pages/FAQ';
+import About from './pages/About';
+import Footer from './components/Footer';
 
-// Protected Route Component for Companies
-const CompanyRoute = ({ children }) => {
-  const { isAuthenticated, isCompany, loading } = useAuth();
-  
-  if (loading) {
-    return <Loading />;
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (!isCompany) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return children;
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen bg-gray-100">
+          <Navbar />
+          <main className="flex-1 container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/jobs" element={<FindJobs />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<DashboardSelector />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/resume-builder" element={<ResumeBuilder />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
+  );
 };
 
-// Protected Route Component for Job Seekers
-const JobSeekerRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+// Helper component to redirect to correct dashboard based on role
+const DashboardSelector = () => {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  if (!userInfo) return <Login />;
   
-  if (loading) {
-    return <Loading />;
-  }
+  if (userInfo.role === 'organisation') return <CompanyDashboard />;
+  if (userInfo.role === 'admin') return <AdminDashboard />;
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
+  // Jobseekers don't have a dedicated dashboard anymore, redirect to profile
+  window.location.href = '/profile';
+  return null;
 };
-
-function AppContent() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/jobs/:id" element={<JobDetails />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          {/* Company Routes */}
-          <Route
-            path="/company/dashboard"
-            element={
-              <CompanyRoute>
-                <CompanyDashboard />
-              </CompanyRoute>
-            }
-          />
-          <Route
-            path="/company/post-job"
-            element={
-              <CompanyRoute>
-                <PostJob />
-              </CompanyRoute>
-            }
-          />
-          
-          {/* Catch all - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </Router>
-  );
-}
 
 export default App;

@@ -1,37 +1,78 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const jobSchema = new mongoose.Schema(
+const jobSchema = mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Job title is required"],
+      required: true,
     },
     description: {
       type: String,
-      required: [true, "Job description is required"],
+      required: true,
     },
     company: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Company",
+      ref: 'User',
       required: true,
     },
     location: {
       type: String,
-      required: [true, "Location is required"],
+      required: true,
     },
-    salary: {
+    type: {
       type: String,
+      enum: ['Full-time', 'Part-time', 'Internship', 'Contract'],
+      default: 'Full-time',
     },
-    applicants: [
+    salaryMin: {
+      type: Number,
+      default: 0,
+    },
+    salaryMax: {
+      type: Number,
+      default: 0,
+    },
+    experienceLevel: {
+      type: String,
+      default: 'Entry Level',
+    },
+    educationLevel: {
+      type: String,
+      default: 'Any',
+    },
+    requirements: [String],
+    termsAndConditions: {
+      type: String,
+      default: ''
+    },
+    applicationDeadline: {
+      type: Date,
+      default: null
+    },
+    applications: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        resume: String,
+        status: {
+          type: String,
+          enum: ['Pending', 'Reviewed', 'Accepted', 'Rejected'],
+          default: 'Pending',
+        },
+        appliedAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-const Job = mongoose.model("Job", jobSchema);
+const Job = mongoose.model('Job', jobSchema);
 
 module.exports = Job;
