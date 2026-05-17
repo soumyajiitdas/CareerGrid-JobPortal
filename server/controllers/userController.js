@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const OTP = require('../models/otpModel');
 const { generateToken } = require('../utils/generateToken');
 const sendEmail = require('../utils/email');
 const { getOtpTemplate, getJobseekerWelcomeTemplate, getOrgWelcomeTemplate } = require('../utils/emailTemplates');
@@ -9,10 +10,6 @@ const { getOtpTemplate, getJobseekerWelcomeTemplate, getOrgWelcomeTemplate } = r
 const registerUser = async (req, res) => {
   const { username, email, password, role, contact, fullName } = req.body;
 
-  // Remove any previous unverified accounts with the same email or username
-  await User.deleteMany({ email, isVerified: false });
-  await User.deleteMany({ username, isVerified: false });
-
   const userExists = await User.findOne({ $or: [{ email }, { username }] });
 
   if (userExists) {
@@ -22,71 +19,67 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'Username is already taken' });
   }
 
-  const user = await User.create({
-    username,
+  // Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save to temporary OTP collection instead of User collection
+  await OTP.deleteMany({ email }); // Remove any existing pending registration
+  await OTP.create({
     email,
-    password,
-    role,
-    contact,
-    profile: { fullName: fullName || '' },
-    isApproved: role === 'organisation' ? false : true,
-    isVerified: false,
+    otp,
+    userData: { username, email, password, role, contact, fullName }
   });
 
-  if (user) {
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.otp = otp;
-    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    await user.save();
-
-    // Send OTP email
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: 'Verify your Career Portal Account',
-        message: `Your OTP for account verification is: ${otp}\nThis OTP is valid for 10 minutes.`,
-        html: getOtpTemplate(otp),
-      });
-    } catch (error) {
-      console.error('Email could not be sent', error);
-    }
-
-    res.status(201).json({
-      message: 'Registration successful. Please verify your email with the OTP sent to you.',
-      userId: user._id,
-      email: user.email,
-      requireOTP: true
+  // Send OTP email
+  try {
+    await sendEmail({
+      email,
+      subject: 'Verify your Career Portal Account',
+      message: `Your OTP for account verification is: ${otp}\nThis OTP is valid for 10 minutes.`,
+      html: getOtpTemplate(otp),
     });
-  } else {
-    res.status(400).json({ message: 'Invalid user data' });
+  } catch (error) {
+    console.error('Email could not be sent', error);
   }
+
+  res.status(201).json({
+    message: 'Registration successful. Please verify your email with the OTP sent to you.',
+    email: email,
+    requireOTP: true
+  });
 };
 
 // @desc    Verify OTP
 // @route   POST /api/users/verify-otp
 // @access  Public
 const verifyOTP = async (req, res) => {
-  const { userId, otp } = req.body;
+  const { email, otp } = req.body;
 
-  const user = await User.findById(userId);
+  const otpRecord = await OTP.findOne({ email });
 
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+  if (!otpRecord) {
+    return res.status(404).json({ message: 'No pending verification found for this email, or OTP has expired.' });
   }
 
-  if (user.isVerified) {
-    return res.status(400).json({ message: 'User already verified' });
+  if (otpRecord.otp !== otp) {
+    return res.status(400).json({ message: 'Invalid OTP' });
   }
 
-  if (user.otp !== otp || user.otpExpires < Date.now()) {
-    return res.status(400).json({ message: 'Invalid or expired OTP' });
-  }
+  // OTP is valid. Now create the actual User in the database
+  const userData = otpRecord.userData;
+  const user = await User.create({
+    username: userData.username,
+    email: userData.email,
+    password: userData.password,
+    role: userData.role,
+    contact: userData.contact,
+    profile: { fullName: userData.fullName || '' },
+    isApproved: userData.role === 'organisation' ? false : true,
+    isVerified: true,
+  });
 
-  user.isVerified = true;
-  user.otp = undefined;
-  user.otpExpires = undefined;
-  await user.save();
+  // Remove the OTP record
+  await OTP.deleteMany({ email });
 
   // Send Welcome Email for jobseekers
   if (user.role === 'jobseeker') {
@@ -100,6 +93,13 @@ const verifyOTP = async (req, res) => {
     } catch (error) {
       console.error('Welcome email could not be sent', error);
     }
+  }
+
+  if (user.role === 'organisation' && !user.isApproved) {
+    return res.json({
+      pendingApproval: true,
+      message: 'Email verified successfully! Your account is now pending admin approval. You will receive an email once approved.'
+    });
   }
 
   res.json({
@@ -121,26 +121,12 @@ const authUser = async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
-    if (!user.isVerified) {
-      // Resend OTP logic
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      user.otp = otp;
-      user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    // Automatically migrate legacy users who don't have isVerified = true
+    if (user.isVerified === false) {
+      user.isVerified = true;
       await user.save();
-
-      try {
-        await sendEmail({
-          email: user.email,
-          subject: 'Verify your Career Portal Account',
-          message: `Your OTP for account verification is: ${otp}\nThis OTP is valid for 10 minutes.`,
-          html: getOtpTemplate(otp),
-        });
-      } catch (error) {
-        console.error('Email could not be sent', error);
-      }
-
-      return res.status(401).json({ message: 'Please verify your email first. A new OTP has been sent.', requireOTP: true, userId: user._id });
     }
+
     if (user.role === 'organisation' && !user.isApproved) {
       return res.status(401).json({ message: 'Organisation account pending admin approval' });
     }

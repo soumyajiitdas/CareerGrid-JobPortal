@@ -20,7 +20,7 @@ const Register = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [requireOTP, setRequireOTP] = useState(false);
   const [otp, setOtp] = useState('');
-  const [userId, setUserId] = useState(null);
+  const [verifyEmail, setVerifyEmail] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Register = () => {
       const { data } = await axios.post('/api/users/register', formData);
       if (data.requireOTP) {
         setRequireOTP(true);
-        setUserId(data.userId);
+        setVerifyEmail(data.email);
       } else {
         login(data);
         navigate('/dashboard');
@@ -70,9 +70,14 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post('/api/users/verify-otp', { userId, otp });
-      login(data);
-      navigate('/dashboard');
+      const { data } = await axios.post('/api/users/verify-otp', { email: verifyEmail, otp });
+      if (data.pendingApproval) {
+        alert(data.message);
+        navigate('/login');
+      } else {
+        login(data);
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Verification failed. Please check the OTP.');
     } finally {

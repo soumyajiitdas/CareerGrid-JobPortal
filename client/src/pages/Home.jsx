@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Globe, Zap, FileJson, ArrowRight, CheckCircle2, TrendingUp, Building, Users } from 'lucide-react';
+import { Search, Globe, Zap, FileJson, ArrowRight, CheckCircle2, TrendingUp, Building, Users, ShieldCheck, Briefcase, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Home = () => {
@@ -16,21 +16,24 @@ const Home = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-600"></span>
               </span>
-              Over 10,000 active student jobs
+              Over 20+ Active Opportunities
             </div>
 
-            <h1 className="text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.1]">
-              Find your next <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">dream job</span> faster.
+            <h1 className="text-6xl lg:text-[5.5rem] font-black tracking-tight text-slate-900 leading-[1.05]">
+              Accelerate your <br className="hidden lg:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-gradient-x">
+                professional journey
+              </span>
             </h1>
 
-            <p className="text-lg text-slate-600 max-w-lg leading-relaxed font-medium">
-              Join thousands of students launching their careers. Build a professional resume, apply to top companies, and get hired.
+            <p className="text-xl text-slate-600 max-w-2xl leading-relaxed font-medium">
+              Career Grid connects ambitious talent with world-class organizations. Build an ATS-friendly resume, apply seamlessly, and get hired faster.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 to="/jobs"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
+                className="bg-blue-700 hover:bg-blue-900 text-white px-8 py-4 rounded-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
               >
                 Explore Jobs <ArrowRight className="w-5 h-5" />
               </Link>
@@ -42,9 +45,15 @@ const Home = () => {
               </Link>
             </div>
 
-            <div className="flex items-center gap-6 pt-6 text-sm font-bold text-slate-500">
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> Free Forever</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> Top Companies</div>
+            <div className="flex items-center gap-8 pt-4 text-sm font-bold text-slate-500">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-emerald-100 p-1.5 rounded-full"><CheckCircle2 className="w-4 h-4 text-emerald-600" /></div>
+                Free for Jobseekers
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="bg-blue-100 p-1.5 rounded-full"><ShieldCheck className="w-4 h-4 text-blue-600" /></div>
+                Verified Companies
+              </div>
             </div>
           </div>
 
@@ -55,14 +64,29 @@ const Home = () => {
               alt="Students collaborating"
               className="relative rounded-3xl shadow-2xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500 object-cover h-[600px] w-full"
             />
-            {/* Floating Stats Card */}
-            <div className="absolute -bottom-10 -left-10 bg-white p-6 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-4 animate-bounce" style={{ animationDuration: '3s' }}>
-              <div className="bg-green-100 p-3 rounded-xl text-green-600">
-                <TrendingUp className="w-8 h-8" />
+            {/* Floating Element 1 */}
+            <div className="absolute top-10 -left-12 bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 flex items-center gap-4 animate-[float_4s_ease-in-out_infinite]">
+              <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
+                <Briefcase className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-500">Hiring Rate</p>
-                <p className="text-2xl font-black text-slate-900">+48%</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">New Jobs</p>
+                <p className="text-xl font-black text-slate-900">+20 this week</p>
+              </div>
+            </div>
+
+            {/* Floating Element 2 */}
+            <div className="absolute bottom-20 -right-10 bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/50 flex items-center gap-4 animate-[float_5s_ease-in-out_infinite_reverse]">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map(i => (
+                  <img key={i} src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="avatar" className="w-10 h-10 rounded-full border-2 border-white shadow-sm" />
+                ))}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">60+ Hired</p>
+                <div className="flex text-yellow-400">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                </div>
               </div>
             </div>
           </div>
@@ -74,15 +98,15 @@ const Home = () => {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative z-10 grid md:grid-cols-3 gap-8">
           <div className="space-y-2">
-            <div className="text-5xl font-black text-blue-400">10k+</div>
+            <div className="text-5xl font-black text-blue-400">20+</div>
             <div className="text-slate-300 font-medium">Active Jobs</div>
           </div>
           <div className="space-y-2">
-            <div className="text-5xl font-black text-indigo-400">500+</div>
+            <div className="text-5xl font-black text-indigo-400">25+</div>
             <div className="text-slate-300 font-medium">Partner Companies</div>
           </div>
           <div className="space-y-2">
-            <div className="text-5xl font-black text-emerald-400">50k+</div>
+            <div className="text-5xl font-black text-emerald-400">60+</div>
             <div className="text-slate-300 font-medium">Students Hired</div>
           </div>
         </div>
