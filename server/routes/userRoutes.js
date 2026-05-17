@@ -7,10 +7,12 @@ const {
   updateUserProfile,
   getUsers,
   approveUser,
+  verifyOTP,
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 router.post('/register', registerUser);
+router.post('/verify-otp', verifyOTP);
 router.post('/login', authUser);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
 router.route('/all').get(protect, admin, getUsers);

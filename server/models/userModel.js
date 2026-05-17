@@ -23,6 +23,16 @@ const userSchema = mongoose.Schema(
       enum: ['jobseeker', 'organisation', 'admin'],
       default: 'jobseeker',
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: {
+      type: String,
+    },
+    otpExpires: {
+      type: Date,
+    },
     isApproved: {
       type: Boolean,
       default: false,

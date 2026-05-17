@@ -10,6 +10,9 @@ const Login = () => {
   const [role, setRole] = useState('jobseeker');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [requireOTP, setRequireOTP] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [userId, setUserId] = useState(null);
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -38,11 +41,79 @@ const Login = () => {
         navigate('/jobs'); // Redirect student to Find Jobs
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      if (err.response?.data?.requireOTP) {
+        setRequireOTP(true);
+        setUserId(err.response.data.userId);
+        setError('');
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const { data } = await axios.post('/api/users/verify-otp', { userId, otp });
+      login(data);
+      if (data.role === 'admin') {
+        navigate('/admin');
+      } else if (data.role === 'organisation') {
+        navigate('/dashboard');
+      } else {
+        navigate('/jobs');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Verification failed. Please check the OTP.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (requireOTP) {
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-10 border border-gray-100">
+        <div className="bg-blue-900 py-8 text-center">
+          <AlertCircle className="w-12 h-12 text-white mx-auto mb-2" />
+          <h2 className="text-2xl font-bold text-white">Verify Your Email</h2>
+          <p className="text-blue-200">We sent an OTP to your email.</p>
+        </div>
+        <form onSubmit={handleVerifyOTP} className="p-8 space-y-6">
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-3 border border-red-100">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Lock className="w-4 h-4" /> Enter OTP
+            </label>
+            <input 
+              type="text" 
+              className="w-full px-4 py-3 text-center text-xl tracking-widest rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition transform active:scale-95 disabled:bg-gray-400"
+          >
+            {loading ? 'Verifying...' : 'Verify Email'}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-10 border border-gray-100">
