@@ -11,8 +11,10 @@ export const uploadToCloudinary = async (file) => {
   data.append("file", file);
   data.append("upload_preset", uploadPreset);
 
-  // Use 'raw' resource type for PDFs so Cloudinary doesn't reject them
-  const resourceType = file.type === "application/pdf" ? "raw" : "image";
+  // Cloudinary explicitly requires 'image' resource type to handle PDFs properly 
+  // without triggering the strict 'raw' download blocks, but we also explicitly
+  // use 'auto' so it correctly attaches the .pdf extension
+  const resourceType = "auto";
 
   try {
     const res = await fetch(
@@ -34,11 +36,10 @@ export const uploadToCloudinary = async (file) => {
   }
 };
 
-/**
- * Given a Cloudinary PDF URL, returns a Google Docs viewer URL so it
- * opens inline in the browser without needing a PDF plugin.
- */
-export const getPdfViewerUrl = (pdfUrl) => {
-  if (!pdfUrl) return null;
-  return `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+export const getSafePdfUrl = (url) => {
+  // We no longer inject fl_attachment because it forces a download 
+  // rather than letting the browser open the PDF inline.
+  // NOTE: Cloudinary free tier blocks PDF delivery by default. 
+  // You must enable it in Cloudinary Settings -> Security -> Restricted Media Types.
+  return url || '';
 };

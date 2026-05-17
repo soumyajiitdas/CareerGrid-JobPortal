@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getPdfViewerUrl } from '../utils/uploadImage';
+import { getSafePdfUrl } from '../utils/uploadImage';
 import { PlusCircle, List, Send, CheckCircle, XCircle, Edit2, X, Clock, Calendar, IndianRupee, Users, FileText, Phone, Mail, ExternalLink } from 'lucide-react';
 
 const MAX_SALARY = 50; // in LPA
@@ -158,9 +158,14 @@ const CompanyDashboard = () => {
   };
   const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => { fetchMyJobs(); }, []);
+  useEffect(() => { 
+    if (user) {
+      fetchMyJobs(); 
+    }
+  }, [user]);
 
   const fetchMyJobs = async () => {
+    if (!user) return;
     try {
       const { data } = await axios.get('/api/jobs');
       const myJobs = data.filter(j => j.company._id === user._id || j.company === user._id);
@@ -407,12 +412,12 @@ const CompanyDashboard = () => {
                                 <td className="px-6 py-3">
                                   {app.resume ? (
                                     <a
-                                      href={getPdfViewerUrl(app.resume)}
+                                      href={getSafePdfUrl(app.resume)}
                                       target="_blank"
                                       rel="noreferrer"
                                       className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:text-blue-800 text-xs"
                                     >
-                                      <FileText className="w-4 h-4" /> View PDF
+                                      <FileText className="w-4 h-4" /> Download PDF
                                       <ExternalLink className="w-3 h-3" />
                                     </a>
                                   ) : (
