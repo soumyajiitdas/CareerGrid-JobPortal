@@ -123,18 +123,32 @@ const FindJobs = () => {
           <h1 className="text-3xl font-bold text-slate-900">Find Your Dream Job</h1>
           <p className="text-slate-500">Browse thousands of opportunities tailored for you.</p>
         </div>
-        <div className="w-full md:w-96 relative">
+        <form 
+          className="w-full md:w-96 relative"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (search.trim() !== '') {
+              window.open(`https://www.google.com/search?q=${encodeURIComponent(search)}`, '_blank');
+            }
+          }}
+        >
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-slate-400" />
           </div>
           <input
             type="text"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50 focus:bg-white"
-            placeholder="Search by keyword..."
+            className="w-full pl-11 pr-20 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50 focus:bg-white"
+            placeholder="Search on Google..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
+          <button 
+            type="submit" 
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
       <div className="grid md:grid-cols-4 gap-8">

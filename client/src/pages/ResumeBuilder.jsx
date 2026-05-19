@@ -380,9 +380,9 @@ const ResumeBuilder = () => {
           </h3>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-8 z-10 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-8 z-10 flex justify-center items-start">
           {/* A4 Paper Size Aspect Ratio container */}
-          <div ref={componentRef} className="bg-white w-full max-w-[800px] shadow-2xl rounded-sm p-10 text-slate-800 flex flex-col gap-6" style={{ minHeight: '1056px' }}>
+          <div ref={componentRef} className="bg-white w-full max-w-[800px] shadow-2xl rounded-sm p-10 text-slate-800 flex flex-col gap-6 h-fit" style={{ minHeight: '1056px' }}>
             {/* Header */}
             <div className="flex items-center gap-8 border-b-2 border-slate-900 pb-6">
               {resumeData.profilePic && (
@@ -407,9 +407,9 @@ const ResumeBuilder = () => {
 
             {/* Summary */}
             {(resumeData.summary) && (
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-300 uppercase mb-3 pb-1">Professional Summary</h3>
-                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">{resumeData.summary}</p>
+              <div className="w-full">
+                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-300 uppercase mb-3 pb-1 w-full">Professional Summary</h3>
+                <p className="text-sm leading-relaxed text-slate-700 text-justify w-full block break-words">{resumeData.summary}</p>
               </div>
             )}
 
