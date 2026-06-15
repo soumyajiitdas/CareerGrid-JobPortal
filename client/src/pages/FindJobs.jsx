@@ -19,6 +19,7 @@ const FindJobs = () => {
     experience: 'Any',
     education: 'Any',
     salaryMin: 0,   // minimum salary filter (LPA)
+    status: 'Ongoing',
   });
 
   useEffect(() => {
@@ -113,7 +114,13 @@ const FindJobs = () => {
     const matchSalary = filters.salaryMin === 0 || 
                         (job.salaryMin === 0 && job.salaryMax === 0) || 
                         (job.salaryMax >= filters.salaryMin);
-    return matchTitle && matchLoc && matchType && matchExp && matchEdu && matchSalary;
+    
+    const isClosed = job.applicationDeadline && new Date() > new Date(job.applicationDeadline);
+    const matchStatus = filters.status === 'All' || 
+                        (filters.status === 'Ongoing' && !isClosed) || 
+                        (filters.status === 'Expired' && isClosed);
+
+    return matchTitle && matchLoc && matchType && matchExp && matchEdu && matchSalary && matchStatus;
   });
 
   return (
@@ -170,6 +177,19 @@ const FindJobs = () => {
                   value={filters.location}
                   onChange={(e) => setFilters({...filters, location: e.target.value})}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Job Status</label>
+                <select 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all text-sm"
+                  value={filters.status}
+                  onChange={(e) => setFilters({...filters, status: e.target.value})}
+                >
+                  <option value="Ongoing">Ongoing</option>
+                  <option value="Expired">Expired</option>
+                  <option value="All">All</option>
+                </select>
               </div>
 
               <div className="space-y-2">

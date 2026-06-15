@@ -38,7 +38,7 @@ const Login = () => {
       } else if (data.role === 'organisation') {
         navigate('/dashboard');
       } else {
-        navigate('/jobs'); // Redirect student to Find Jobs
+        navigate('/student-dashboard');
       }
     } catch (err) {
       if (err.response?.data?.requireOTP) {
@@ -66,7 +66,7 @@ const Login = () => {
       } else if (data.role === 'organisation') {
         navigate('/dashboard');
       } else {
-        navigate('/jobs');
+        navigate('/student-dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Verification failed. Please check the OTP.');

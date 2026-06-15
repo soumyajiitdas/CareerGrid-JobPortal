@@ -44,20 +44,28 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
-            {(!user || user.role === 'jobseeker') && (
+            {!user && (
               <>
                 <NavLink to="/">Home</NavLink>
                 <NavLink to="/jobs">Find Jobs</NavLink>
+                <NavLink to="/about">About</NavLink>
               </>
             )}
-            <NavLink to="/about">About</NavLink>
             {user && (
               <>
                 {user.role === 'jobseeker' && (
-                  <NavLink to="/resume-builder">Resume Builder</NavLink>
+                  <>
+                    <NavLink to="/student-dashboard">Dashboard</NavLink>
+                    <NavLink to="/jobs">Find Jobs</NavLink>
+                    <NavLink to="/resume-builder">Resume Builder</NavLink>
+                  </>
                 )}
                 {user.role === 'organisation' && (
-                  <NavLink to="/dashboard">Dashboard</NavLink>
+                  <>
+                    <NavLink to="/dashboard">Dashboard</NavLink>
+                    <NavLink to="/manage-jobs">Manage Jobs</NavLink>
+                    <NavLink to="/applicants">Applicants</NavLink>
+                  </>
                 )}
                 {user.role === 'admin' && (
                   <NavLink to="/admin">Control Center</NavLink>

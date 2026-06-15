@@ -144,6 +144,70 @@ const Home = () => {
         </div>
       </section>
 
+      {/* How it Works Section */}
+      <section className="bg-white rounded-3xl p-12 shadow-xl border border-slate-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="text-center mb-16 space-y-4 relative z-10">
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900">How Career Grid Works</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg font-medium">Your journey to a dream job simplified in three easy steps.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 relative z-10">
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-black shadow-sm">1</div>
+            <h3 className="text-xl font-bold text-slate-900">Create Profile</h3>
+            <p className="text-slate-500 font-medium px-4">Sign up and use our AI-powered resume builder to highlight your skills and education.</p>
+          </div>
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl font-black shadow-sm">2</div>
+            <h3 className="text-xl font-bold text-slate-900">Discover Jobs</h3>
+            <p className="text-slate-500 font-medium px-4">Browse verified opportunities from top organizations tailored to your profile.</p>
+          </div>
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl font-black shadow-sm">3</div>
+            <h3 className="text-xl font-bold text-slate-900">Get Hired</h3>
+            <p className="text-slate-500 font-medium px-4">Apply with one click, track your applications, and land your dream role.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="scroll-mt-24">
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900">Success Stories</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg font-medium">Hear from students who found their start through Career Grid.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 hover:shadow-lg transition-shadow relative">
+            <div className="text-yellow-400 flex gap-1 mb-6">
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
+            </div>
+            <p className="text-lg text-slate-700 italic font-medium mb-6">"The resume builder is fantastic. It helped me highlight my projects, and I got hired as a Junior Developer within 2 weeks of applying!"</p>
+            <div className="flex items-center gap-4">
+              <img src="https://i.pravatar.cc/150?img=32" alt="Student" className="w-12 h-12 rounded-full shadow-md" />
+              <div>
+                <p className="font-bold text-slate-900">Sarah Jenkins</p>
+                <p className="text-sm text-slate-500">Software Engineer at TechCorp</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 hover:shadow-lg transition-shadow relative">
+            <div className="text-yellow-400 flex gap-1 mb-6">
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
+            </div>
+            <p className="text-lg text-slate-700 italic font-medium mb-6">"I loved how easy it was to filter internships. The platform connected me directly with the hiring managers, skipping the noise."</p>
+            <div className="flex items-center gap-4">
+              <img src="https://i.pravatar.cc/150?img=11" alt="Student" className="w-12 h-12 rounded-full shadow-md" />
+              <div>
+                <p className="font-bold text-slate-900">David Chen</p>
+                <p className="text-sm text-slate-500">Marketing Intern at GlobalBrand</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-12 text-center text-white shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>

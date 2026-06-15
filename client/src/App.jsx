@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CompanyDashboard from './pages/CompanyDashboard';
+import ManageJobs from './pages/ManageJobs';
+import CompanyApplicants from './pages/CompanyApplicants';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import ResumeBuilder from './pages/ResumeBuilder';
@@ -13,6 +15,7 @@ import FindJobs from './pages/FindJobs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import FAQ from './pages/FAQ';
 import About from './pages/About';
+import StudentDashboard from './pages/StudentDashboard';
 import Footer from './components/Footer';
 
 const App = () => {
@@ -28,6 +31,9 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<DashboardSelector />} />
+              <Route path="/manage-jobs" element={<ManageJobs />} />
+              <Route path="/applicants" element={<CompanyApplicants />} />
+              <Route path="/student-dashboard" element={<StudentDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/resume-builder" element={<ResumeBuilder />} />
@@ -50,8 +56,8 @@ const DashboardSelector = () => {
   
   if (userInfo.role === 'organisation') return <CompanyDashboard />;
   if (userInfo.role === 'admin') return <AdminDashboard />;
+  if (userInfo.role === 'jobseeker') return <StudentDashboard />;
   
-  // Jobseekers don't have a dedicated dashboard anymore, redirect to profile
   window.location.href = '/profile';
   return null;
 };
