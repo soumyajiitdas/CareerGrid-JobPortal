@@ -20,6 +20,7 @@ const FindJobs = () => {
     education: 'Any',
     salaryMin: 0,   // minimum salary filter (LPA)
     status: 'Ongoing',
+    applicationStatus: 'Not Applied',
   });
 
   useEffect(() => {
@@ -120,8 +121,15 @@ const FindJobs = () => {
                         (filters.status === 'Ongoing' && !isClosed) || 
                         (filters.status === 'Expired' && isClosed);
 
-    return matchTitle && matchLoc && matchType && matchExp && matchEdu && matchSalary && matchStatus;
+    const isApplied = hasApplied(job);
+    const matchAppStatus = !filters.applicationStatus || filters.applicationStatus === 'All' || 
+                           (filters.applicationStatus === 'Applied' && isApplied) || 
+                           (filters.applicationStatus === 'Not Applied' && !isApplied);
+
+    return matchTitle && matchLoc && matchType && matchExp && matchEdu && matchSalary && matchStatus && matchAppStatus;
   });
+
+  const sortedJobs = [...filteredJobs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto mt-4">
@@ -192,6 +200,21 @@ const FindJobs = () => {
                 </select>
               </div>
 
+              {user && user.role === 'jobseeker' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">My Applications</label>
+                  <select 
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all text-sm"
+                    value={filters.applicationStatus}
+                    onChange={(e) => setFilters({...filters, applicationStatus: e.target.value})}
+                  >
+                    <option value="All">All Jobs</option>
+                    <option value="Applied">Applied</option>
+                    <option value="Not Applied">Not Applied</option>
+                  </select>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Job Type</label>
                 <select 
@@ -261,7 +284,7 @@ const FindJobs = () => {
         {/* Job Listings */}
         <main className="md:col-span-3 space-y-6">
           <div className="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold text-slate-800">Results ({filteredJobs.length})</h2>
+            <h2 className="text-xl font-bold text-slate-800">Results ({sortedJobs.length})</h2>
             <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
               <Clock className="w-4 h-4" /> Latest Postings
             </div>
@@ -271,9 +294,9 @@ const FindJobs = () => {
             <div className="flex justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-          ) : filteredJobs.length > 0 ? (
+          ) : sortedJobs.length > 0 ? (
             <div className="grid gap-6">
-              {filteredJobs.map(job => (
+              {sortedJobs.map(job => (
                 <JobCard key={job._id} job={job} onApply={() => handleApplyClick(job)} user={user} />
               ))}
             </div>
