@@ -155,7 +155,13 @@ const StudentDashboard = () => {
                 </div>
               ) : appliedJobs.length > 0 ? (
                 <div className="space-y-4">
-                  {appliedJobs.slice(0, 5).map(job => (
+                  {appliedJobs.slice(0, 5).map(job => {
+                    const myApp = job.applications.find(a => (a.user?._id || a.user)?.toString() === user._id?.toString());
+                    const status = myApp?.status || 'Pending';
+                    const isAccepted = status === 'Accepted';
+                    const isRejected = status === 'Rejected';
+                    
+                    return (
                     <div key={job._id} className="group flex flex-col sm:flex-row justify-between sm:items-center gap-4 p-5 rounded-2xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all shadow-sm hover:shadow-md">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-black text-xl text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-colors overflow-hidden">
@@ -174,17 +180,21 @@ const StudentDashboard = () => {
                         </div>
                       </div>
                       <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2">
-                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200">
-                          <CheckCircle className="w-3 h-3" /> Application Sent
+                        <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border ${
+                          isAccepted ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                          isRejected ? 'bg-red-100 text-red-700 border-red-200' :
+                          'bg-amber-100 text-amber-700 border-amber-200'
+                        }`}>
+                          {isAccepted ? <CheckCircle className="w-3 h-3" /> : null}
+                          {status}
                         </span>
                         <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {/* Fallback to job creation date if actual apply date isn't stored in this payload */}
                           Applied Recently
                         </span>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">

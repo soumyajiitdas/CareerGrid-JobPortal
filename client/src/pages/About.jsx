@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
-import { Mail, Send, Code, Users, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import { Mail, Send, Code, Users, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const About = () => {
   const [feedback, setFeedback] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate form submission
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFeedback({ name: '', email: '', message: '' });
-    }, 3000);
+    setLoading(true);
+    setError('');
+    
+    try {
+      await axios.post('/api/feedback', feedback);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFeedback({ name: '', email: '', message: '' });
+      }, 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send feedback. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const developers = [
@@ -75,6 +87,12 @@ const About = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-3 border border-red-100">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">Name</label>
@@ -112,9 +130,10 @@ const About = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 shadow-md"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 shadow-md disabled:bg-blue-400 disabled:transform-none"
             >
-              <Send className="w-5 h-5" /> Send Feedback
+              <Send className="w-5 h-5" /> {loading ? 'Sending...' : 'Send Feedback'}
             </button>
           </form>
         )}

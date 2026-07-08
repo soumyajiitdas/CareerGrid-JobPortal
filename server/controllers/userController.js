@@ -2,7 +2,7 @@ const User = require('../models/userModel');
 const OTP = require('../models/otpModel');
 const { generateToken } = require('../utils/generateToken');
 const sendEmail = require('../utils/email');
-const { getOtpTemplate, getJobseekerWelcomeTemplate, getOrgWelcomeTemplate } = require('../utils/emailTemplates');
+const { getOtpTemplate, getJobseekerWelcomeTemplate, getOrgWelcomeTemplate, getForgotPasswordTemplate } = require('../utils/emailTemplates');
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -238,6 +238,66 @@ const approveUser = async (req, res) => {
   }
 };
 
+// @desc    Forgot Password Request
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: 'No account found with that email address.' });
+  }
+
+  // Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save to user
+  user.otp = otp;
+  user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  await user.save();
+
+  // Send OTP email
+  try {
+    await sendEmail({
+      email,
+      subject: 'Password Reset Request',
+      message: `Your OTP for password reset is: ${otp}\nThis OTP is valid for 10 minutes.`,
+      html: getForgotPasswordTemplate(otp),
+    });
+    res.json({ message: 'Password reset OTP sent to email.' });
+  } catch (error) {
+    console.error('Email could not be sent', error);
+    res.status(500).json({ message: 'Failed to send password reset email.' });
+  }
+};
+
+// @desc    Reset Password
+// @route   POST /api/users/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  const user = await User.findOne({
+    email,
+    otp,
+    otpExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired OTP.' });
+  }
+
+  user.password = password;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+
+  await user.save();
+
+  res.json({ message: 'Password reset successfully. You can now log in with your new password.' });
+};
+
 module.exports = {
   registerUser,
   authUser,
@@ -246,4 +306,6 @@ module.exports = {
   getUsers,
   approveUser,
   verifyOTP,
+  forgotPassword,
+  resetPassword
 };

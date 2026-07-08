@@ -48,7 +48,7 @@ const CompanyApplicants = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       for (const job of myJobs) {
         const { data } = await axios.get(`/api/jobs/${job._id}/applicants`, config);
-        const appsWithJob = data.map(app => ({ ...app, jobTitle: job.title }));
+        const appsWithJob = data.map(app => ({ ...app, jobTitle: job.title, jobId: job._id }));
         allApps = [...allApps, ...appsWithJob];
       }
       // Sort by latest applied
@@ -72,12 +72,25 @@ const CompanyApplicants = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const { data } = await axios.get(`/api/jobs/${jobId}/applicants`, config);
       const jobTitle = jobs.find(j => j._id === jobId)?.title;
-      const appsWithJob = data.map(app => ({ ...app, jobTitle }));
+      const appsWithJob = data.map(app => ({ ...app, jobTitle, jobId }));
       setApplicants(appsWithJob);
     } catch (err) {
       console.error(err);
     } finally {
       setLoadingApplicants(false);
+    }
+  };
+
+  const handleUpdateStatus = async (jobId, userId, newStatus) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      await axios.put(`/api/jobs/${jobId}/applicants/${userId}/status`, { status: newStatus }, config);
+      
+      setApplicants(prev => prev.map(app => 
+        (app.user._id === userId && app.jobId === jobId) ? { ...app, status: newStatus } : app
+      ));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -119,7 +132,8 @@ const CompanyApplicants = () => {
                   <th className="px-6 py-4 font-bold">Applied For</th>
                   <th className="px-6 py-4 font-bold">Contact</th>
                   <th className="px-6 py-4 font-bold">Applied On</th>
-                  <th className="px-6 py-4 font-bold">Resume</th>
+                  <th className="px-6 py-4 font-bold">Status</th>
+                  <th className="px-6 py-4 font-bold">Resume & Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -142,19 +156,47 @@ const CompanyApplicants = () => {
                       {new Date(app.appliedAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
                     </td>
                     <td className="px-6 py-4">
-                      {app.resume ? (
-                        <a
-                          href={getSafePdfUrl(app.resume)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:text-blue-800 transition"
-                        >
-                          <FileText className="w-4 h-4" /> View PDF
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-300 italic text-xs">Not provided</span>
-                      )}
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${
+                        app.status === 'Accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        app.status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                        'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {app.status || 'Pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-2">
+                        {app.resume ? (
+                          <a
+                            href={getSafePdfUrl(app.resume)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:text-blue-800 transition text-xs"
+                          >
+                            <FileText className="w-4 h-4" /> View PDF
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span className="text-slate-300 italic text-xs">Not provided</span>
+                        )}
+                        
+                        {(app.status === 'Pending' || !app.status) && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <button 
+                              onClick={() => handleUpdateStatus(app.jobId, app.user._id, 'Accepted')}
+                              className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1 rounded transition"
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              onClick={() => handleUpdateStatus(app.jobId, app.user._id, 'Rejected')}
+                              className="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold px-3 py-1 rounded transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

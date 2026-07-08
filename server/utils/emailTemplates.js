@@ -84,8 +84,64 @@ const getOrgWelcomeTemplate = (name) => `
 </div>
 `;
 
+const getForgotPasswordTemplate = (otp) => `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h2 style="color: #1e3a8a; margin: 0;">Career Grid</h2>
+  </div>
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <h3 style="color: #333333; margin-top: 0;">Reset Your Password</h3>
+    <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+      You requested to reset your password. Please use the following One-Time Password (OTP) to proceed:
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+      <span style="display: inline-block; font-size: 32px; font-weight: bold; color: #1e3a8a; letter-spacing: 5px; padding: 15px 30px; background-color: #f0f4f8; border-radius: 8px; border: 2px dashed #1e3a8a;">
+        ${otp}
+      </span>
+    </div>
+    <p style="color: #555555; font-size: 14px; line-height: 1.5;">
+      This OTP is valid for <strong>10 minutes</strong>. If you did not request a password reset, please ignore this email.
+    </p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888888; font-size: 12px;">
+    <p>&copy; ${new Date().getFullYear()} Career Grid. All rights reserved.</p>
+  </div>
+</div>
+`;
+
+const getRejectionTemplate = (name, jobTitle) => `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h2 style="color: #1e3a8a; margin: 0;">Career Grid</h2>
+  </div>
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+      Dear ${name},
+    </p>
+    <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+      Thank you for your interest in the <strong>${jobTitle}</strong> position and for taking the time to apply.
+    </p>
+    <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+      After careful consideration, the company has decided to move forward with other candidates who more closely match their current needs for this role.
+    </p>
+    <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+      We encourage you to continue exploring other opportunities on Career Grid. We wish you the best of luck in your job search and future professional endeavors.
+    </p>
+    <p style="color: #555555; font-size: 14px; line-height: 1.5; margin-top: 30px;">
+      Best Regards,<br/>
+      <strong>The Career Grid Team</strong>
+    </p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888888; font-size: 12px;">
+    <p>&copy; ${new Date().getFullYear()} Career Grid. All rights reserved.</p>
+  </div>
+</div>
+`;
+
 module.exports = {
   getOtpTemplate,
   getJobseekerWelcomeTemplate,
-  getOrgWelcomeTemplate
+  getOrgWelcomeTemplate,
+  getForgotPasswordTemplate,
+  getRejectionTemplate
 };

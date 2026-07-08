@@ -1,4 +1,6 @@
 const Job = require('../models/jobModel');
+const sendEmail = require('../utils/email');
+const { getRejectionTemplate } = require('../utils/emailTemplates');
 
 // @desc    Create a new job
 // @route   POST /api/jobs
@@ -126,6 +128,72 @@ const getJobApplicants = async (req, res) => {
   }
 };
 
+// @desc    Update applicant status
+// @route   PUT /api/jobs/:id/applicants/:userId/status
+// @access  Private (Organisation only)
+const updateApplicationStatus = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id).populate('applications.user', 'email profile.fullName');
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    if (job.company.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const { status } = req.body;
+    if (!['Pending', 'Reviewed', 'Accepted', 'Rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const application = job.applications.find(
+      app => app.user._id.toString() === req.params.userId
+    );
+
+    if (!application) {
+      return res.status(404).json({ message: 'Application not found' });
+    }
+
+    application.status = status;
+    await job.save();
+
+    // Send email if accepted or rejected
+    if (application.user.email) {
+      const applicantName = application.user.profile?.fullName || 'Candidate';
+      
+      if (status === 'Accepted') {
+        const message = `Dear ${applicantName},\n\nCongratulations! Your application for the position of "${job.title}" has been Accepted.\n\nThe company will be in touch with you shortly regarding the next steps.\n\nBest regards,\nCareerGrid Team`;
+        
+        try {
+          await sendEmail({
+            email: application.user.email,
+            subject: `Application Accepted: ${job.title}`,
+            message,
+          });
+        } catch (emailErr) {
+          console.error('Error sending acceptance email:', emailErr);
+          // We still return success since status is updated
+        }
+      } else if (status === 'Rejected') {
+        try {
+          await sendEmail({
+            email: application.user.email,
+            subject: `Update on your application for ${job.title}`,
+            message: `Dear ${applicantName},\n\nThank you for your interest in the ${job.title} position. After careful consideration, the company has decided to move forward with other candidates.\n\nBest regards,\nCareerGrid Team`,
+            html: getRejectionTemplate(applicantName, job.title),
+          });
+        } catch (emailErr) {
+          console.error('Error sending rejection email:', emailErr);
+          // We still return success since status is updated
+        }
+      }
+    }
+
+    res.json(job.applications);
+  } catch (err) {
+    console.error('updateApplicationStatus error:', err);
+    res.status(500).json({ message: err.message || 'Failed to update status' });
+  }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -133,4 +201,5 @@ module.exports = {
   applyToJob,
   updateJob,
   getJobApplicants,
+  updateApplicationStatus,
 };

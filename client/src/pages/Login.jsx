@@ -164,9 +164,14 @@ const Login = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            <Lock className="w-4 h-4" /> Password
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Lock className="w-4 h-4" /> Password
+            </label>
+            <Link to="/forgot-password" className="text-sm text-blue-900 hover:underline font-medium">
+              Forgot password?
+            </Link>
+          </div>
           <input 
             type="password" 
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
